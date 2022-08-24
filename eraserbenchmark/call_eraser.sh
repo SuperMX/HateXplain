@@ -1,0 +1,1 @@
+PYTHONPATH=./:$PYTHONPATH python rationale_benchmark/metrics.py --split test --strict --data_dir ../Data/Evaluation/Model_Eval --results ../explanations_dicts/bestModel_bert_base_uncased_Attn_train_TRUE_0.001_explanation_top5.json --score_file ../model_explain_output.json
