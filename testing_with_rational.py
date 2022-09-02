@@ -61,6 +61,7 @@ model_dict_params={
 def select_model(params,embeddings):
     if(params['bert_tokens']):
         if(params['what_bert']=='weighted'):
+            #print(params)
             model = SC_weighted_BERT.from_pretrained(
             params['path_files'], # Use the 12-layer BERT model, with an uncased vocab.
             num_labels = params['num_classes'], # The number of output labels
@@ -104,7 +105,9 @@ def standaloneEval_with_rational(params, test_data=None,extra_data_path=None, to
     
     embeddings=None
     if(params['bert_tokens']):
+        #print(params)
         train,val,test=createDatasetSplit(params)
+
         vocab_own=None    
         vocab_size =0
         padding_idx =0
@@ -116,17 +119,23 @@ def standaloneEval_with_rational(params, test_data=None,extra_data_path=None, to
     if(params['auto_weights']):
         y_test = [ele[2] for ele in test] 
         encoder = LabelEncoder()
-        encoder.classes_ = np.load('Data/classes.npy')
+        #encoder.classes_ = np.load('Data/classes.npy')
+        encoder.classes_ = np.load(params['class_names'],allow_pickle=True)
         params['weights']=class_weight.compute_class_weight('balanced',np.unique(y_test),y_test).astype('float32')
     if(extra_data_path!=None):
         params_dash={}
-        params_dash['num_classes']=3
+        params_dash['num_classes']=2
         params_dash['data_file']=extra_data_path
         params_dash['class_names']=dict_data_folder[str(params['num_classes'])]['class_label']
         temp_read = get_annotated_data(params_dash)
         with open('Data/post_id_divisions.json', 'r') as fp:
             post_id_dict=json.load(fp)
-        temp_read=temp_read[temp_read['post_id'].isin(post_id_dict['test']) & (temp_read['final_label'].isin(['hatespeech','offensive']))]
+        if(params['num_classes']==3):
+            temp_read=temp_read[temp_read['post_id'].isin(post_id_dict['test']) & (temp_read['final_label'].isin(['hatespeech','offensive']))]
+        elif(params['num_classes']==2):
+            temp_read=temp_read[temp_read['post_id'].isin(post_id_dict['test']) & (temp_read['final_label'].isin(['toxic']))]
+        else:
+            print("ERROR: num_classes not set")
         test_data=get_test_data(temp_read,params,message='text')
         test_extra=encodeData(test_data,vocab_own,params)
         test_dataloader=combine_features(test_extra,params,is_train=False)
@@ -134,8 +143,9 @@ def standaloneEval_with_rational(params, test_data=None,extra_data_path=None, to
         test_extra=encodeData(test_data,vocab_own,params)
         test_dataloader=combine_features(test_extra,params,is_train=False)
     else:
+        print("WHEVEREVER YOU ARE")
         test_dataloader=combine_features(test,params,is_train=False)
-    
+        print("WHATEVER YOU DO")   
     
     
     model=select_model(params,embeddings)
@@ -243,13 +253,18 @@ def standaloneEval_with_rational(params, test_data=None,extra_data_path=None, to
 #             continue
         temp={}
         encoder = LabelEncoder()
-        encoder.classes_ = np.load('Data/classes.npy')
+        encoder.classes_ = np.load(params['class_names'],allow_pickle=True)
         pred_label=encoder.inverse_transform([pred])[0]
         ground_label=encoder.inverse_transform([ground_truth])[0]
         temp["annotation_id"]=post_id
         temp["classification"]=pred_label
-        temp["classification_scores"]={"hatespeech":logits[0],"normal":logits[1],"offensive":logits[2]}
         
+        if(params['num_classes']==3):
+            temp["classification_scores"]={"hatespeech":logits[0],"normal":logits[1],"offensive":logits[2]}
+        elif(params['num_classes']==2):
+            temp["classification_scores"]={"non-toxic":logits[0],"toxic":logits[1]}
+        else:
+            print("ERROR: num_classes not set")
         topk_indicies = sorted(range(len(attention)), key=lambda i: attention[i])[-topk:]
         
         temp_hard_rationales=[]
@@ -331,7 +346,7 @@ if __name__=='__main__':
     
     
     params['variance']=1
-    params['num_classes']=3
+    params['num_classes']=2
     params['device']='cpu'
     fix_the_random(seed_val = params['random_seed'])
     params['class_names']=dict_data_folder[str(params['num_classes'])]['class_label']

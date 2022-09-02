@@ -64,7 +64,7 @@ dict_data_folder={
       '3':{'data_file':'Data/dataset.json','class_label':'Data/classes.npy'}
 }
 
-def return_params(path_name,att_lambda,num_classes=3):
+def return_params(path_name,att_lambda,num_classes=2):
     with open(path_name,mode='r') as f:
         params = json.load(f)
     for key in params:

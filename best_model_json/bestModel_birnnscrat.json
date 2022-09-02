@@ -26,7 +26,7 @@
     "model_name": "birnnscrat",
     "normalized": "False",
     "not_recollect": "True",
-    "num_classes": 3.0,
+    "num_classes": 2.0,
     "num_supervised_heads": "N/A",
     "p_value": 0.8,
     "padding_idx": 0.0,

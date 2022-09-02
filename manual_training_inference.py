@@ -47,8 +47,9 @@ def get_gpu():
     print('There are %d GPU(s) available.' % torch.cuda.device_count())
     while(1):
         tempID = [] 
-        tempID = GPUtil.getAvailable(order = 'memory', limit = 1, maxLoad = 0.1, maxMemory = 0.07, includeNan=False, excludeID=[], excludeUUID=[])
+        tempID = GPUtil.getAvailable()
         if len(tempID) > 0:
+            print(str(tempID)+" vs "+os.environ["CUDA_VISIBLE_DEVICES"])
             print("Found a gpu")
             print('We will use the GPU:',tempID[0],torch.cuda.get_device_name(tempID[0]))
             deviceID=tempID
@@ -571,7 +572,7 @@ if __name__=='__main__':
     params['variance']=1
     params['epochs']=5
     params['to_save']=True
-    params['num_classes']=3
+    params['num_classes']=2
     params['data_file']=dict_data_folder[str(params['num_classes'])]['data_file']
     params['class_names']=dict_data_folder[str(params['num_classes'])]['class_label']
     if(params['num_classes']==2 and (params['auto_weights']==False)):

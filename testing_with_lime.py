@@ -260,8 +260,8 @@ def standaloneEval_with_lime(params, model_to_use,test_data=None,topk=2,rational
                 sentence= " ".join(tokens)
                 
             temp={}
-
-            exp = explainer.explain_instance(sentence, modelClass.return_probab, num_features=6, top_labels=3,num_samples=params['num_samples'])
+            #top_labels was 3
+            exp = explainer.explain_instance(sentence, modelClass.return_probab, num_features=6, top_labels=2,num_samples=params['num_samples'])
             pred_id=np.argmax(exp.predict_proba)
             pred_label=encoder.inverse_transform([pred_id])[0]
             ground_label=row['Label']
@@ -375,7 +375,7 @@ if __name__=='__main__':
     model_to_use=args.model_to_use
     
     params={}
-    params['num_classes']=3
+    params['num_classes']=2
     params['data_file']=dict_data_folder[str(params['num_classes'])]['data_file']
     params['class_names']=dict_data_folder[str(params['num_classes'])]['class_label']
     temp_read=get_annotated_data(params)
@@ -387,7 +387,7 @@ if __name__=='__main__':
     
     
     params=return_params(model_dict_params[model_to_use],float(args.attention_lambda))
-    params['num_classes']=3
+    params['num_classes']=2
     params['num_samples']=args.num_samples
     params['variance']=1
     params['device']='cpu'

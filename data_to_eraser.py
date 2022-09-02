@@ -16,7 +16,7 @@ dict_data_folder={
 # We need to load the dataset with the labels as 'hatespeech', 'offensive', and 'normal' (3-class). 
 
 params = {}
-params['num_classes']=3
+params['num_classes']=2
 params['data_file']=dict_data_folder[str(params['num_classes'])]['data_file']
 params['class_names']=dict_data_folder[str(params['num_classes'])]['class_label']
 
@@ -130,6 +130,9 @@ def convert_to_eraser_format(dataset, method, save_split, save_path, id_division
         majority_label = eachrow[1]
         
         if majority_label=='normal':
+            continue
+
+        if majority_label=='non-toxic':
             continue
         
         all_labels = eachrow[4]
