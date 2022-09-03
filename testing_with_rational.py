@@ -125,6 +125,8 @@ def standaloneEval_with_rational(params, test_data=None,extra_data_path=None, to
     if(extra_data_path!=None):
         params_dash={}
         params_dash['num_classes']=2
+        params_dash['voting']=params['voting']
+        params_dash['target']=params['target']
         params_dash['data_file']=extra_data_path
         params_dash['class_names']=dict_data_folder[str(params['num_classes'])]['class_label']
         temp_read = get_annotated_data(params_dash)
@@ -143,9 +145,7 @@ def standaloneEval_with_rational(params, test_data=None,extra_data_path=None, to
         test_extra=encodeData(test_data,vocab_own,params)
         test_dataloader=combine_features(test_extra,params,is_train=False)
     else:
-        print("WHEVEREVER YOU ARE")
-        test_dataloader=combine_features(test,params,is_train=False)
-        print("WHATEVER YOU DO")   
+        test_dataloader=combine_features(test,params,is_train=False) 
     
     
     model=select_model(params,embeddings)
@@ -333,7 +333,19 @@ if __name__=='__main__':
                            type=str,
                            help='required to assign the contribution of the atention loss')
     
-    
+    my_parser.add_argument('voting',
+        metavar="--voting",
+        help='voting for the three annotations, either minority or majority',
+        choices=["minority", "majority"],
+        #default="majority",
+        type=str)
+
+    my_parser.add_argument('target',
+        metavar="--target",
+        help='target',
+        choices=["Women", "Homosexual"],
+        #default="majority",
+        type=str)
     
     args = my_parser.parse_args()
     
@@ -344,7 +356,8 @@ if __name__=='__main__':
     params=return_params(model_dict_params[model_to_use],float(args.attention_lambda))
     
     
-    
+    params['voting']=args.voting
+    params['target']=args.target
     params['variance']=1
     params['num_classes']=2
     params['device']='cpu'

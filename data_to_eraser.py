@@ -3,6 +3,7 @@ import json
 from tqdm.notebook import tqdm
 import more_itertools as mit
 import os
+import argparse
 
 # get_annotated_data method is used to load the dataset
 from Preprocess import *
@@ -13,12 +14,30 @@ dict_data_folder={
       '3':{'data_file':'Data/dataset.json','class_label':'Data/classes.npy'}
 }
 
-# We need to load the dataset with the labels as 'hatespeech', 'offensive', and 'normal' (3-class). 
+my_parser = argparse.ArgumentParser(description='Export dataset.json to ERASER')
+
+my_parser.add_argument('voting',
+    metavar="--voting",
+    help='voting for the three annotations, either minority or majority',
+    choices=["minority", "majority"],
+    #default="majority",
+    type=str)
+
+my_parser.add_argument('target',
+    metavar="--target",
+    help='target',
+    choices=["Women", "Homosexual"],
+    #default="majority",
+    type=str)
+    
+args = my_parser.parse_args()
 
 params = {}
 params['num_classes']=2
 params['data_file']=dict_data_folder[str(params['num_classes'])]['data_file']
 params['class_names']=dict_data_folder[str(params['num_classes'])]['class_label']
+params['voting']=args.voting
+params['target']=args.target
 
 data_all_labelled=get_annotated_data(params)
 

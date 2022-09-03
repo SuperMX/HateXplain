@@ -66,7 +66,10 @@ def get_annotated_data(params):
                         #nothing to do
                     elif(params['voting']=='minority'):
                         print(target_list)
-                        if('Homosexual' in target_list or 'Women' in target_list):
+                        #if('Homosexual' in target_list or 'Women' in target_list):
+                        if('target' not in params):
+                            print("ERROR: please set target!!")
+                        if(params['target'] in target_list):
                             final_label_id='toxic'
                         else:
                             final_label_id='non-toxic'

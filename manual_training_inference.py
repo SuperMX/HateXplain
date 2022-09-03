@@ -532,6 +532,13 @@ if __name__=='__main__':
         choices=["minority", "majority"],
         #default="majority",
         type=str)
+
+    my_parser.add_argument('target',
+        metavar="--target",
+        help='target',
+        choices=["Women", "Homosexual"],
+        #default="majority",
+        type=str)
     
     args = my_parser.parse_args()
     params['best_params']=False
@@ -575,6 +582,7 @@ if __name__=='__main__':
         
     #### Few handy keys that you can directly change.
     params['voting']=args.voting
+    params['target']=args.target
     params['variance']=1
     params['epochs']=5
     params['to_save']=True

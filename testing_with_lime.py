@@ -385,7 +385,19 @@ if __name__=='__main__':
                            type=str,
                            help='required to assign the contribution of the atention loss')
     
-    
+    my_parser.add_argument('voting',
+        metavar="--voting",
+        help='voting for the three annotations, either minority or majority',
+        choices=["minority", "majority"],
+        #default="majority",
+        type=str)
+
+    my_parser.add_argument('target',
+        metavar="--target",
+        help='target',
+        choices=["Women", "Homosexual"],
+        #default="majority",
+        type=str)
     
     args = my_parser.parse_args()
     
@@ -394,6 +406,8 @@ if __name__=='__main__':
     
     params={}
     params['num_classes']=2
+    params['voting']=args.voting
+    params['target']=args.target
     params['data_file']=dict_data_folder[str(params['num_classes'])]['data_file']
     params['class_names']=dict_data_folder[str(params['num_classes'])]['class_label']
     temp_read=get_annotated_data(params)
@@ -406,6 +420,8 @@ if __name__=='__main__':
     
     params=return_params(model_dict_params[model_to_use],float(args.attention_lambda))
     params['num_classes']=2
+    params['voting']=args.voting
+    params['target']=args.target
     params['num_samples']=args.num_samples
     params['variance']=1
     params['device']='cpu'
