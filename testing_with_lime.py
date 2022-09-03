@@ -133,11 +133,11 @@ class modelPred():
         if(params['auto_weights']):
             y_test = [ele[2] for ele in self.test] 
             encoder = LabelEncoder()
-            encoder.classes_ = np.load('Data/classes.npy')
+            encoder.classes_ = np.load(params['class_names'],allow_pickle=True)
             params['weights']=class_weight.compute_class_weight('balanced',np.unique(y_test),y_test).astype('float32')
 
 
-        temp_read=transform_dummy_data(sentences_list)
+        temp_read=transform_dummy_data(sentences_list,params)
         test_data=get_test_data(temp_read,params,message='text')
         test_extra=encodeData(test_data,self.vocab,params)
         test_dataloader=combine_features(test_extra,params,is_train=False)
@@ -193,6 +193,7 @@ class modelPred():
 
             # Calculate the accuracy for this batch of test sentences.
             # Accumulate the total accuracy.
+
             pred_labels+=list(np.argmax(logits, axis=1).flatten())
             true_labels+=list(label_ids.flatten())
             logits_all+=list(logits)
@@ -213,7 +214,7 @@ class modelPred():
 
 def standaloneEval_with_lime(params, model_to_use,test_data=None,topk=2,rational=False):
     encoder = LabelEncoder()
-    encoder.classes_ = np.load('Data/classes.npy')
+    encoder.classes_ = np.load(params['class_names'],allow_pickle=True)
     explainer = LimeTextExplainer(class_names=list(encoder.classes_),split_expression='\s+',random_state=333,bow=False)
     tokenizer = BertTokenizer.from_pretrained('bert-base-uncased', do_lower_case=False)
     
@@ -221,14 +222,20 @@ def standaloneEval_with_lime(params, model_to_use,test_data=None,topk=2,rational
     
     modelClass=modelPred(model_to_use,params)
     
-    
+    neutral_label = None
+    if(params['num_classes']==3):
+        neutral_label="normal"
+    elif(params['num_classes']==2):
+        neutral_label="non-toxic"
+    else:
+        print("ERROR: num_classes not set")
     
     if(rational==True):
         sentence_list=[]
         post_id_list=[]
         for index,row in tqdm(test_data.iterrows(),total=len(test_data)):
             #print(row)
-            if(row['Label']=='normal'):
+            if(row['Label']==neutral_label):
                 continue
             if(params['bert_tokens']):
                 tokens=tokenizer.convert_ids_to_tokens(row['Text'])[1:-1]
@@ -243,14 +250,19 @@ def standaloneEval_with_lime(params, model_to_use,test_data=None,topk=2,rational
         for post_id,proba in zip(post_id_list,list(probab_list)):
             temp={}
             temp["annotation_id"]=post_id
-            temp["classification_scores"]={"hatespeech":proba[0],"normal":proba[1],"offensive":proba[2]}
+            if(params['num_classes']==3):
+            	temp["classification_scores"]={"hatespeech":proba[0],"normal":proba[1],"offensive":proba[2]}
+            elif(params['num_classes']==2):
+            	temp["classification_scores"]={"non_toxic":proba[0],"toxic":proba[1]}
+            else:
+            	print("ERROR: num_classes not set")
             list_dict.append(temp)
     
     
     else:
         
         for index,row in tqdm(test_data.iterrows(),total=len(test_data)):
-            if(row['Label']=='normal'):
+            if(row['Label']==neutral_label):
                 continue
             if(params['bert_tokens']):
                 tokens=tokenizer.convert_ids_to_tokens(row['Text'])[1:-1]
@@ -267,7 +279,13 @@ def standaloneEval_with_lime(params, model_to_use,test_data=None,topk=2,rational
             ground_label=row['Label']
             temp["annotation_id"]=row['Post_id']
             temp["classification"]=pred_label
-            temp["classification_scores"]={"hatespeech":exp.predict_proba[0],"normal":exp.predict_proba[1],"offensive":exp.predict_proba[2]}
+            if(params['num_classes']==3):
+            	temp["classification_scores"]={"hatespeech":exp.predict_proba[0],"normal":exp.predict_proba[1],"offensive":exp.predict_proba[2]}
+            elif(params['num_classes']==2):
+            	temp["classification_scores"]={"non_toxic":exp.predict_proba[0],"toxic":exp.predict_proba[1]}
+            else:
+            	print("ERROR: num_classes not set")
+            
 
             attention = [0]*len(sentence.split(" "))
 

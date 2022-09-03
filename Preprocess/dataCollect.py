@@ -204,11 +204,21 @@ def convert_data(test_data,params,list_dict,rational_present=True,topk=2):
     df=pd.DataFrame(test_data_modified,columns=test_data.columns)
     return df
 
-
-
 def transform_dummy_data(sentences):
+	params={}
+	params['num_classes']=3
+	return transform_dummy_data(sentences, params)
+	
+
+def transform_dummy_data(sentences,params):
     post_id_list=['temp']*len(sentences)
-    pred_list=['normal']*len(sentences)
+    if(params['num_classes']==3):
+        pred_list=['normal']*len(sentences)
+    elif(params['num_classes']==2):
+        pred_list=['non-toxic']*len(sentences)
+    else:
+        print("ERROR: num_classes not set")
+    
     explanation_list=[]
     sentences_list=[]
     for i in range(len(sentences)):
