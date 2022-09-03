@@ -41,22 +41,37 @@ def get_annotated_data(params):
         temp['post_id']=key
         temp['text']=data[key]['post_tokens']
         final_label=[]
+        target_list=[]
         for i in range(1,4):
             temp['annotatorid'+str(i)]=data[key]['annotators'][i-1]['annotator_id']
 #             temp['explain'+str(i)]=data[key]['annotators'][i-1]['rationales']
             temp['target'+str(i)]=data[key]['annotators'][i-1]['target']
             temp['label'+str(i)]=data[key]['annotators'][i-1]['label']
+            target_list+=list(temp['target'+str(i)])
             final_label.append(temp['label'+str(i)])
+            
 
         final_label_id=max(final_label,key=final_label.count)
         temp['rationales']=data[key]['rationales']
-            
+ 
         if(params['class_names']=='Data/classes_two.npy'):
             if(final_label.count(final_label_id)==1):
                 temp['final_label']='undecided'
             else:
                 if(final_label_id in ['hatespeech','offensive']):
                     final_label_id='toxic'
+                    #add potato additional voting mechanism
+                    if(params['voting']=='majority'):
+                        pass
+                        #nothing to do
+                    elif(params['voting']=='minority'):
+                        print(target_list)
+                        if('Homosexual' in target_list or 'Women' in target_list):
+                            final_label_id='toxic'
+                        else:
+                            final_label_id='non-toxic'
+                    else:
+                        print("ERROR: please set voting mechanism!!")
                 else:
                     final_label_id='non-toxic'
                 temp['final_label']=final_label_id
