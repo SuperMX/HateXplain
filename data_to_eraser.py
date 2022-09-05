@@ -29,6 +29,13 @@ my_parser.add_argument('target',
     choices=["Women", "Homosexual"],
     #default="majority",
     type=str)
+
+my_parser.add_argument('bert_tokens',
+    metavar="--bert_tokens",
+    help='bert_tokens',
+    choices=["True", "False"],
+    #default="majority",
+    type=str)
     
 args = my_parser.parse_args()
 
@@ -43,9 +50,15 @@ data_all_labelled=get_annotated_data(params)
 
 # The important key here is the 'bert_token'. Set it to True for Bert based models and False for Others.
 
+bert_tokens_bool = False
+if(args.bert_tokens == "True"):
+	bert_tokens_bool = True
+#else:
+	#bert_tokens_bool = False
+
 params_data={
     'include_special':False,  #True is want to include <url> in place of urls if False will be removed
-    'bert_tokens':True, #True /False
+    'bert_tokens':bert_tokens_bool, #True /False
     'type_attention':'softmax', #softmax
     'set_decay':0.1,
     'majority':2,
