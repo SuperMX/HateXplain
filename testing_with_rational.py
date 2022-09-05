@@ -209,7 +209,9 @@ def standaloneEval_with_rational(params, test_data=None,extra_data_path=None, to
         else:
             attention_vectors= outputs[1].detach().cpu().numpy()
            
-        
+        #fix batch size of 1
+        if(len(np.array(logits).shape)!=2):
+            logits=[logits]
         # Calculate the accuracy for this batch of test sentences.
         # Accumulate the total accuracy.
         pred_labels+=list(np.argmax(logits, axis=1).flatten())

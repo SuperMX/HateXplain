@@ -143,6 +143,9 @@ def Eval_phase(params,which_files='test',model=None,test_dataloader=None,device=
         # Move logits and labels to CPU
         logits = logits.detach().cpu().numpy()
         label_ids = b_labels.to('cpu').numpy()
+        #fix batch size of 1
+        if(len(np.array(logits).shape)!=2):
+            logits=[logits]
         # Calculate the accuracy for this batch of test sentences.
         # Accumulate the total accuracy.
         pred_labels+=list(np.argmax(logits, axis=1).flatten())
