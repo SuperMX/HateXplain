@@ -54,7 +54,7 @@ function evaluate() {
 	elif [[ "$model" == "cnngru" ]]; then
 		python manual_training_inference.py best_model_json/bestModel_cnn_gru.json True 100 $voting $target | tee training.txt #dummy attention lambda
 		python testing_with_lime.py cnngru 100 100 $voting $target | tee prediction.txt #dummy attention lambda
-		predictions_file="../explanations_dicts/bestModel_cnngru_100_explanation_top5.json"
+		predictions_file="../explanations_dicts/bestModel_cnn_gru_explanation_with_lime_100_100.0.json"
 	elif [[ "$model" == "birnn_att" ]]; then
 		#python manual_training_inference.py best_model_json/bestModel_birnnatt.json
 		echo "ERROR: Not supported yet."
@@ -100,17 +100,17 @@ fi
 #'birnn_att':			BiRNN-Attn
 #'birnn_scrat':			BiRNNN-HateXplain	with [Attn]
 
-#evaluate women/minority_combination_all.json bert_supervised minority
-#evaluate women/majority_combination_all.json bert_supervised majority
-#evaluate homosexual/minority_combination_all.json bert_supervised minority
-#evaluate homosexual/majority_combination_all.json bert_supervised majority
+evaluate women/minority_combination_all.json bert_supervised minority
+evaluate women/majority_combination_all.json bert_supervised majority
+evaluate homosexual/minority_combination_all.json bert_supervised minority
+evaluate homosexual/majority_combination_all.json bert_supervised majority
 
-#evaluate women/minority_combination_all.json birnn_scrat minority
-#evaluate women/majority_combination_all.json birnn_scrat majority
-#evaluate homosexual/minority_combination_all.json birnn_scrat minority
-#evaluate homosexual/majority_combination_all.json birnn_scrat majority
+evaluate women/minority_combination_all.json birnn_scrat minority
+evaluate women/majority_combination_all.json birnn_scrat majority
+evaluate homosexual/minority_combination_all.json birnn_scrat minority
+evaluate homosexual/majority_combination_all.json birnn_scrat majority
 
-#evaluate women/minority_combination_all.json cnngru minority
-#evaluate women/majority_combination_all.json cnngru majority
-#evaluate homosexual/minority_combination_all.json cnngru minority
-#evaluate homosexual/majority_combination_all.json cnngru majority
+evaluate women/minority_combination_all.json cnngru minority
+evaluate women/majority_combination_all.json cnngru majority
+evaluate homosexual/minority_combination_all.json cnngru minority
+evaluate homosexual/majority_combination_all.json cnngru majority

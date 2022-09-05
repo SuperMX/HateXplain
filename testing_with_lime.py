@@ -189,11 +189,13 @@ class modelPred():
             logits = logits.detach().cpu().numpy()
             label_ids = b_labels.detach().cpu().numpy()
 
-    
-
+            #print(str(step)+"/"+str(len(test_dataloader)))
+            #print(logits)
+            #fix batch size of 1
+            if(len(np.array(logits).shape)!=2):
+                logits=[logits]
             # Calculate the accuracy for this batch of test sentences.
             # Accumulate the total accuracy.
-
             pred_labels+=list(np.argmax(logits, axis=1).flatten())
             true_labels+=list(label_ids.flatten())
             logits_all+=list(logits)
@@ -203,7 +205,7 @@ class modelPred():
 
         logits_all_final=[]
         for logits in logits_all:
-            logits_all_final.append(list(softmax(logits)))
+            logits_all_final.append((softmax(logits)))
 
         return np.array(logits_all_final)
 
@@ -253,7 +255,7 @@ def standaloneEval_with_lime(params, model_to_use,test_data=None,topk=2,rational
             if(params['num_classes']==3):
             	temp["classification_scores"]={"hatespeech":proba[0],"normal":proba[1],"offensive":proba[2]}
             elif(params['num_classes']==2):
-            	temp["classification_scores"]={"non_toxic":proba[0],"toxic":proba[1]}
+            	temp["classification_scores"]={"non-toxic":proba[0],"toxic":proba[1]}
             else:
             	print("ERROR: num_classes not set")
             list_dict.append(temp)
@@ -282,7 +284,7 @@ def standaloneEval_with_lime(params, model_to_use,test_data=None,topk=2,rational
             if(params['num_classes']==3):
             	temp["classification_scores"]={"hatespeech":exp.predict_proba[0],"normal":exp.predict_proba[1],"offensive":exp.predict_proba[2]}
             elif(params['num_classes']==2):
-            	temp["classification_scores"]={"non_toxic":exp.predict_proba[0],"toxic":exp.predict_proba[1]}
+            	temp["classification_scores"]={"non-toxic":exp.predict_proba[0],"toxic":exp.predict_proba[1]}
             else:
             	print("ERROR: num_classes not set")
             
