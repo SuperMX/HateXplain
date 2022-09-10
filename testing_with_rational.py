@@ -117,7 +117,15 @@ def standaloneEval_with_rational(params, test_data=None,extra_data_path=None, to
         params['vocab_size']=vocab_own.embeddings.shape[0]
         embeddings=vocab_own.embeddings
     if(params['auto_weights']):
-        y_test = [ele[2] for ele in test] 
+        if(params['split']=='train'):
+            y_test = [ele[2] for ele in train] 
+        elif(params['split']=='val'):
+            y_test = [ele[2] for ele in val] 
+        elif(params['split']=='test'):
+            y_test = [ele[2] for ele in test] 
+        else:
+            print("ERROR: Cannot read split param!!!")
+        
         encoder = LabelEncoder()
         #encoder.classes_ = np.load('Data/classes.npy')
         encoder.classes_ = np.load(params['class_names'],allow_pickle=True)
@@ -133,9 +141,9 @@ def standaloneEval_with_rational(params, test_data=None,extra_data_path=None, to
         with open('Data/post_id_divisions.json', 'r') as fp:
             post_id_dict=json.load(fp)
         if(params['num_classes']==3):
-            temp_read=temp_read[temp_read['post_id'].isin(post_id_dict['test']) & (temp_read['final_label'].isin(['hatespeech','offensive']))]
+            temp_read=temp_read[temp_read['post_id'].isin(post_id_dict[params['split']]) & (temp_read['final_label'].isin(['hatespeech','offensive']))]
         elif(params['num_classes']==2):
-            temp_read=temp_read[temp_read['post_id'].isin(post_id_dict['test']) & (temp_read['final_label'].isin(['toxic']))]
+            temp_read=temp_read[temp_read['post_id'].isin(post_id_dict[params['split']]) & (temp_read['final_label'].isin(['toxic']))]
         else:
             print("ERROR: num_classes not set")
         test_data=get_test_data(temp_read,params,message='text')
@@ -160,9 +168,17 @@ def standaloneEval_with_rational(params, test_data=None,extra_data_path=None, to
     if((extra_data_path!=None) or (use_ext_df==True) ):
         post_id_all=list(test_data['Post_id'])
     else:
-        post_id_all=list(test['Post_id'])
+        if(params['split']=='train'):
+            post_id_all=list(train['Post_id'])
+        elif(params['split']=='val'):
+            post_id_all=list(val['Post_id'])
+        elif(params['split']=='test'):
+            post_id_all=list(test['Post_id'])
+        else:
+            print("ERROR: Cannot read split param!!!")
+        
     
-    print("Running eval on test data...")
+    print("Running eval on "+params['split']+" data...")
     t0 = time.time()
     true_labels=[]
     pred_labels=[]
@@ -367,6 +383,7 @@ if __name__=='__main__':
     
     params['voting']=args.voting
     params['target']=args.target
+    params['split']=args.split
     params['variance']=1
     params['num_classes']=2
     params['device']='cpu'

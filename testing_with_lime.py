@@ -131,7 +131,15 @@ class modelPred():
         device = self.device
         
         if(params['auto_weights']):
-            y_test = [ele[2] for ele in self.test] 
+            if(params['split']=='train'):
+                y_test = [ele[2] for ele in self.train] 
+            elif(params['split']=='val'):
+                y_test = [ele[2] for ele in self.val] 
+            elif(params['split']=='test'):
+                y_test = [ele[2] for ele in self.test] 
+            else:
+                print("ERROR: Cannot read split param!!!")
+            
             encoder = LabelEncoder()
             encoder.classes_ = np.load(params['class_names'],allow_pickle=True)
             params['weights']=class_weight.compute_class_weight('balanced',np.unique(y_test),y_test).astype('float32')
@@ -149,7 +157,7 @@ class modelPred():
         # Tracking variables
         post_id_all=list(test_data['Post_id'])
 
-        print("Running eval on test data...")
+        print("Running eval on "+params['split']+" data...")
         t0 = time.time()
         true_labels=[]
         pred_labels=[]
@@ -417,13 +425,14 @@ if __name__=='__main__':
     params['num_classes']=2
     params['voting']=args.voting
     params['target']=args.target
+    params['split']=args.split
     params['data_file']=dict_data_folder[str(params['num_classes'])]['data_file']
     params['class_names']=dict_data_folder[str(params['num_classes'])]['class_label']
     temp_read=get_annotated_data(params)
     
     with open('Data/post_id_divisions.json', 'r') as fp:
         post_id_dict=json.load(fp)
-    temp_read=temp_read[temp_read['post_id'].isin(post_id_dict['test'])]
+    temp_read=temp_read[temp_read['post_id'].isin(post_id_dict[params['split']])]
     
     
     
@@ -431,6 +440,7 @@ if __name__=='__main__':
     params['num_classes']=2
     params['voting']=args.voting
     params['target']=args.target
+    params['split']=args.split
     params['num_samples']=args.num_samples
     params['variance']=1
     params['device']='cpu'

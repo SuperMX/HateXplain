@@ -84,7 +84,7 @@ function evaluate() {
 	mv prediction.txt $foldername
 	
 	cd eraserbenchmark
-	PYTHONPATH=./:$PYTHONPATH python rationale_benchmark/metrics.py --split test --strict --data_dir ../Data/Evaluation/Model_Eval --results $predictions_file --score_file ../model_explain_output.json | tee eraser.txt
+	PYTHONPATH=./:$PYTHONPATH python rationale_benchmark/metrics.py --split $split --strict --data_dir ../Data/Evaluation/Model_Eval --results $predictions_file --score_file ../model_explain_output.json | tee eraser.txt
 	
 	python print_eraser.py | tee out.txt
 	cd ..
