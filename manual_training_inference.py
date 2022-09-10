@@ -48,6 +48,7 @@ def get_gpu():
     while(1):
         tempID = [] 
         tempID = GPUtil.getAvailable()
+        tempID=[0]
         if len(tempID) > 0:
             print(str(tempID)+" vs "+os.environ["CUDA_VISIBLE_DEVICES"])
             print("Found a gpu")

@@ -3,6 +3,17 @@ function evaluate() {
 	path=$1
 	model=$2
 	voting=$3
+	
+    if [[ $path == *"test"* ]]; then
+		split="test"
+    elif [[ $path == *"train"* ]]; then
+		split="train"
+    elif [[ $path == *"val"* ]]; then
+		split="val"
+	else
+		echo "ERROR: Could not guess split."
+	fi
+	path=${path//$split/combination}
 
 	# process path to folder
 	foldersign="/"
@@ -49,18 +60,21 @@ function evaluate() {
 		echo "ERROR: Not supported yet."
 	elif [[ "$model" == "bert_supervised" ]]; then
 		python manual_training_inference.py best_model_json/bestModel_bert_base_uncased_Attn_train_TRUE.json True 100 $voting $target | tee training.txt
-		python testing_with_rational.py bert_supervised 100 $voting $target | tee prediction.txt
+		python testing_with_rational.py bert_supervised 100 $voting $target $split | tee prediction.txt
+		python testing_for_performance.py bert_supervised 100 $voting $target $split
 		predictions_file="../explanations_dicts/bestModel_bert_base_uncased_Attn_train_TRUE_100_explanation_top5.json"
 	elif [[ "$model" == "cnngru" ]]; then
 		python manual_training_inference.py best_model_json/bestModel_cnn_gru.json True 100 $voting $target | tee training.txt #dummy attention lambda
-		python testing_with_lime.py cnngru 100 100 $voting $target | tee prediction.txt #dummy attention lambda
+		python testing_with_lime.py cnngru 100 100 $voting $target $split | tee prediction.txt #dummy attention lambda
+		python testing_for_performance.py bert_supervised 100 $voting $target $split
 		predictions_file="../explanations_dicts/bestModel_cnn_gru_explanation_with_lime_100_100.0.json"
 	elif [[ "$model" == "birnn_att" ]]; then
 		#python manual_training_inference.py best_model_json/bestModel_birnnatt.json
 		echo "ERROR: Not supported yet."
 	elif [[ "$model" == "birnn_scrat" ]]; then
 		python manual_training_inference.py best_model_json/bestModel_birnnscrat.json True 100 $voting $target | tee training.txt
-		python testing_with_rational.py birnn_scrat 100 $voting $target | tee prediction.txt
+		python testing_with_rational.py birnn_scrat 100 $voting $target $split | tee prediction.txt
+		python testing_for_performance.py bert_supervised 100 $voting $target $split
 		predictions_file="../explanations_dicts/bestModel_birnnscrat_100_explanation_top5.json"
 	else
 		echo "ERROR: Unknown model string."
@@ -74,6 +88,8 @@ function evaluate() {
 	
 	python print_eraser.py | tee out.txt
 	cd ..
+	
+	mv cat_stats.json $foldername
 	
 	mv eraserbenchmark/eraser.txt $foldername
 	mv eraserbenchmark/out.txt $foldername
@@ -100,17 +116,17 @@ fi
 #'birnn_att':			BiRNN-Attn
 #'birnn_scrat':			BiRNNN-HateXplain	with [Attn]
 
-evaluate women/minority_combination_all.json bert_supervised minority
-evaluate women/majority_combination_all.json bert_supervised majority
-evaluate homosexual/minority_combination_all.json bert_supervised minority
-evaluate homosexual/majority_combination_all.json bert_supervised majority
+evaluate women/minority_val_all.json bert_supervised minority
+evaluate women/majority_val_all.json bert_supervised majority
+evaluate homosexual/minority_val_all.json bert_supervised minority
+evaluate homosexual/majority_val_all.json bert_supervised majority
 
-evaluate women/minority_combination_all.json birnn_scrat minority
-evaluate women/majority_combination_all.json birnn_scrat majority
-evaluate homosexual/minority_combination_all.json birnn_scrat minority
-evaluate homosexual/majority_combination_all.json birnn_scrat majority
+evaluate women/minority_val_all.json birnn_scrat minority
+evaluate women/majority_val_all.json birnn_scrat majority
+evaluate homosexual/minority_val_all.json birnn_scrat minority
+evaluate homosexual/majority_val_all.json birnn_scrat majority
 
-evaluate women/minority_combination_all.json cnngru minority
-evaluate women/majority_combination_all.json cnngru majority
-evaluate homosexual/minority_combination_all.json cnngru minority
-evaluate homosexual/majority_combination_all.json cnngru majority
+evaluate women/minority_val_all.json cnngru minority
+evaluate women/majority_val_all.json cnngru majority
+evaluate homosexual/minority_val_all.json cnngru minority
+evaluate homosexual/majority_val_all.json cnngru majority

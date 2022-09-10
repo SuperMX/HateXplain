@@ -400,6 +400,13 @@ if __name__=='__main__':
         choices=["Women", "Homosexual"],
         #default="majority",
         type=str)
+
+    my_parser.add_argument('split',
+        metavar="--split",
+        help='split',
+        choices=["train", "test", "val"],
+        #default="majority",
+        type=str)
     
     args = my_parser.parse_args()
     
