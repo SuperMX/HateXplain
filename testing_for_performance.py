@@ -218,10 +218,10 @@ def standaloneEval(params, test_data=None,extra_data_path=None, topk=2,use_ext_d
         logits = logits.detach().cpu().numpy()
         label_ids = b_labels.detach().cpu().numpy()
         
-        if(params['bert_tokens']):
-            attention_vectors=np.mean(outputs[1][11][:,:,0,:].detach().cpu().numpy(),axis=1)
-        else:
-            attention_vectors= outputs[1].detach().cpu().numpy()
+        #if(params['bert_tokens']):
+        #    attention_vectors=np.mean(outputs[1][11][:,:,0,:].detach().cpu().numpy(),axis=1)
+        #else:
+        #    attention_vectors= outputs[1].detach().cpu().numpy()
            
         #fix batch size of 1
         if(len(np.array(logits).shape)!=2):
@@ -231,7 +231,7 @@ def standaloneEval(params, test_data=None,extra_data_path=None, topk=2,use_ext_d
         pred_labels+=list(np.argmax(logits, axis=1).flatten())
         true_labels+=list(label_ids.flatten())
         logits_all+=list(logits)
-        attention_all+=list(attention_vectors)
+        #attention_all+=list(attention_vectors)
         input_mask_all+=list(batch[2].detach().cpu().numpy())
 
 

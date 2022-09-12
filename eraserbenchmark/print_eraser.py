@@ -1,34 +1,25 @@
 import json
+import argparse
 from tuw_nlp.common.eval import *
 
-''' Example:
-------------------------
-Plausibility
-IOU F1 : 0.343
-Token F1 : 0.212
+my_parser = argparse.ArgumentParser(description='Which model to use')
 
-Faithfulness
-Comprehensiveness : 0.294
-Sufficiency : 0.088
+# Add the arguments
+my_parser.add_argument('foldername',
+                        metavar='--foldername',
+                        nargs='?',
+                        type=str,
+                        default="evaluation",
+                        help='foldername of the data for description')
 
-------------------------
-              precision    recall  f1-score   support
-
-           0      0.957     0.982     0.969      1078
-           1      0.513     0.294     0.374        68
-
-    accuracy                          0.942      1146
-   macro avg      0.735     0.638     0.672      1146
-weighted avg      0.930     0.942     0.934      1146
-
-------------------------
-'''
+args = my_parser.parse_args()
 
 # print the required results
-with open('../model_explain_output.json') as fp:
+with open('../eraser_output.json') as fp:
     output_data = json.load(fp)
 
-print("\n------------------------")
+print("\n"+args.foldername+":")
+print("------------------------")
 	
 print('Plausibility')
 if 'iou_scores' in output_data:
@@ -48,20 +39,7 @@ else:
 	print('--')
 print("")
 
-
 print("------------------------")
-'''
-print("              precision    recall  f1-score   support")
-print("")
-print("           0      "+"-"+"     "+"-"+"     "+"-"+"      "+"-"+"")
-print("           1      "+"-"+"     "+"-"+"     "+"-"+"        "+"-"+"")
-print("")
-print("    accuracy                          "+"-"+"      "+"-"+"")
-print("   macro avg      "+"-"+"     "+"-"+"     "+"-"+"      "+"-"+"")
-print("weighted avg      "+"-"+"     "+"-"+"     "+"-"+"      "+"-"+"")
-print("")
-print("------------------------")
-'''
 
 with open('../cat_stats.json') as fp:
     cat_stats = json.load(fp)

@@ -23,7 +23,8 @@ function evaluate() {
 	empty=""
 	foldername=${foldername//$tsv/$empty}
 	foldername="$foldername-$model"
-
+	foldername=${foldername//combination/$split}
+	
     if [[ $path == *"women"* ]]; then
 		target="Women"
     elif [[ $path == *"homosexual"* ]]; then
@@ -33,6 +34,7 @@ function evaluate() {
 	fi
 
 	mkdir $foldername
+	path=${path//$split/combination}
 	cp $path Data/dataset.json
 	postidpath=${path//combination/post_id_divisions}
 	cp $postidpath Data/post_id_divisions.json
@@ -66,7 +68,7 @@ function evaluate() {
 	elif [[ "$model" == "cnngru" ]]; then
 		python manual_training_inference.py best_model_json/bestModel_cnn_gru.json True 100 $voting $target | tee training.txt #dummy attention lambda
 		python testing_with_lime.py cnngru 100 100 $voting $target $split | tee prediction.txt #dummy attention lambda
-		python testing_for_performance.py bert_supervised 100 $voting $target $split
+		python testing_for_performance.py cnngru 100 $voting $target $split
 		predictions_file="../explanations_dicts/bestModel_cnn_gru_explanation_with_lime_100_100.0.json"
 	elif [[ "$model" == "birnn_att" ]]; then
 		#python manual_training_inference.py best_model_json/bestModel_birnnatt.json
@@ -74,7 +76,7 @@ function evaluate() {
 	elif [[ "$model" == "birnn_scrat" ]]; then
 		python manual_training_inference.py best_model_json/bestModel_birnnscrat.json True 100 $voting $target | tee training.txt
 		python testing_with_rational.py birnn_scrat 100 $voting $target $split | tee prediction.txt
-		python testing_for_performance.py bert_supervised 100 $voting $target $split
+		python testing_for_performance.py birnn_scrat 100 $voting $target $split
 		predictions_file="../explanations_dicts/bestModel_birnnscrat_100_explanation_top5.json"
 	else
 		echo "ERROR: Unknown model string."
@@ -84,9 +86,9 @@ function evaluate() {
 	mv prediction.txt $foldername
 	
 	cd eraserbenchmark
-	PYTHONPATH=./:$PYTHONPATH python rationale_benchmark/metrics.py --split $split --strict --data_dir ../Data/Evaluation/Model_Eval --results $predictions_file --score_file ../model_explain_output.json | tee eraser.txt
+	PYTHONPATH=./:$PYTHONPATH python rationale_benchmark/metrics.py --split $split --strict --data_dir ../Data/Evaluation/Model_Eval --results $predictions_file --score_file ../eraser_output.json | tee eraser.txt
 	
-	python print_eraser.py | tee out.txt
+	python print_eraser.py $foldername | tee out.txt
 	cd ..
 	
 	mv cat_stats.json $foldername
@@ -98,7 +100,7 @@ function evaluate() {
 	mv Data/Evaluation $foldername/Data
 	mv Saved $foldername
 	mv explanations_dicts $foldername
-	mv model_explain_output.json $foldername
+	mv eraser_output.json $foldername
 
 }
 
