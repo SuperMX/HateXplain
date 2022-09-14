@@ -29,9 +29,110 @@ def set_name(params):
     file_name+='_'+str(params['num_classes'])+'.pickle'
     return file_name
 
+import sys
+import re
+from collections import defaultdict
 
+def regularize_im(t):
+    t = re.sub(r"\bi[ ]*['`]*m\n", "i am", t, flags=re.I)
+    return t
+
+def preprocess_hatexplain(tweet):
+    tweet = regularize_im(tweet)
+    return tweet
 
 def get_annotated_data(params):
+    #temp_read = pd.read_pickle(params['data_file'])
+    with open(params['data_file'], 'r') as fp:
+        data = json.load(fp)
+        dict_data=[]
+        for post in data.values():
+            #potato
+            sentence = " ".join(post["post_tokens"])
+            sentence = preprocess_hatexplain(sentence)
+            targets = {}
+            labels = {}
+            #hatexplain
+            temp={}
+            temp['post_id']=post["post_id"]
+            temp['text']=post['post_tokens']
+            final_label=[]
+            target_list=[]
+            for i in range(1,4):
+                temp['annotatorid'+str(i)]=post['annotators'][i-1]['annotator_id']
+#                 temp['explain'+str(i)]=post['annotators'][i-1]['rationales']
+                temp['target'+str(i)]=post['annotators'][i-1]['target']
+                temp['label'+str(i)]=post['annotators'][i-1]['label']
+
+            for annotation in post["annotators"]:
+                if annotation["label"] not in labels:
+                    labels[annotation["label"]] = 1
+                else:
+                    labels[annotation["label"]] += 1
+                for target_i in annotation["target"]:
+                    if target_i not in targets:
+                        targets[target_i] = 1
+                    else:
+                        targets[target_i] += 1
+
+            # We don't care about the instances, where each annotator said something different label-wise
+            if len(labels) != len(post["annotators"]):
+                majority_targets = [t for (t, c) in targets.items() if c >= 2]
+                minority_targets = [t for (t, c) in targets.items() if c < 2]
+                rationale = defaultdict(list)
+                # Get the rationales in an organized manner
+                z = []
+                temp['rationales'] = z
+                if len(post["rationales"]) > 0:
+                    not_none_annotators = [
+                        a["target"]
+                        for a in post["annotators"]
+                        if a["label"] != "normal"
+                    ]
+                    for annotator, rationales in zip(
+                        not_none_annotators, post["rationales"]
+                    ):
+                        major_intersection = list(
+                            set(annotator).intersection(majority_targets)
+                        )
+                        minor_intersection = list(
+                            set(annotator).intersection(minority_targets)
+                        )
+                        for mi in major_intersection + minor_intersection:
+                            rationale[mi].append(rationales)
+                    rationale = {
+                        key: np.round(np.mean(value, axis=0), decimals=0).tolist()
+                        for (key, value) in rationale.items()
+                    }
+                    z = [int(i) for i in list(rationale.values())[0]]
+                #data_by_target.append(
+                #    {
+                #        "id": post["post_id"],
+                #        "tokens": post["post_tokens"],
+                #        "sentence": sentence,
+                #        "pure": pure,
+                #        "one_majority": one_majority,
+                #        "rationales": dict(rationale),
+                #        "majority_labels": majority_targets,
+                #        "minority_labels": minority_targets,
+                #    }
+                #)
+                    temp['rationales']=[z,z,z]
+                target_list = []
+                if(params['voting']=='majority'):
+                    target_list=target_list+majority_targets
+                elif(params['voting']=='minority'):
+                    target_list=target_list+majority_targets+minority_targets
+
+                if(params['target'] in target_list):
+                    temp['final_label']='toxic'
+                else:
+                    temp['final_label']='non-toxic'
+                dict_data.append(temp)    
+    temp_read = pd.DataFrame(dict_data)  
+    return temp_read    
+
+def get_annotated_data1(params):
     #temp_read = pd.read_pickle(params['data_file'])
     with open(params['data_file'], 'r') as fp:
         data = json.load(fp)
